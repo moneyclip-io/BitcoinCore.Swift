@@ -10,6 +10,11 @@ public struct Checkpoint {
         self.block = block
         self.additionalBlocks = additionalBlocks
     }
+    
+    public init(providedBlock: Block) {
+        block = providedBlock
+        additionalBlocks = []
+    }
 
     public init(bundleName: String, network: String, blockType: CheckpointData.BlockType) throws {
         guard let blockchain = CheckpointData.Blockchain(rawValue: bundleName),

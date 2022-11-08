@@ -498,6 +498,7 @@ public protocol INetwork: AnyObject {
     var coinType: UInt32 { get }
     var sigHash: SigHashType { get }
     var syncableFromApi: Bool { get }
+    var providedBlock: Block? { get }
 }
 
 protocol IMerkleBlockValidator: AnyObject {
