@@ -207,7 +207,7 @@ public class BitcoinCoreBuilder {
         let checkpoint = BlockSyncer.resolveCheckpoint(network: network, syncMode: syncMode, storage: storage)
 
         let blockHashFetcher = BlockHashFetcher(restoreKeyConverter: restoreKeyConverterChain, apiManager: initialSyncApi, helper: BlockHashFetcherHelper())
-        let blockDiscovery = BlockDiscoveryBatch(checkpoint: checkpoint, gapLimit: 20, blockHashFetcher: blockHashFetcher, publicKeyFetcher: publicKeyFetcher, logger: logger)
+        let blockDiscovery = BlockDiscoveryBatch(checkpoint: checkpoint, gapLimit: gapLimit, blockHashFetcher: blockHashFetcher, publicKeyFetcher: publicKeyFetcher, logger: logger)
 
         let stateManager = ApiSyncStateManager(storage: storage, restoreFromApi: network.syncableFromApi && syncMode == BitcoinCore.SyncMode.api)
 
