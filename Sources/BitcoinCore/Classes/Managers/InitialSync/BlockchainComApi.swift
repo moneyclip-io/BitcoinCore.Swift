@@ -9,15 +9,21 @@ public class BlockchainComApi {
 
     private let url: String
     private let hsUrl: String
+    private let jwtUrl: String
+    private let authKey: String
     private let networkManager: NetworkManager
+    private let jwtService: JwtService
 
     private static var serialSchedulers = [String: SerialDispatchQueueScheduler]()
     private let serialScheduler: SerialDispatchQueueScheduler
 
-    public init(url: String, hsUrl: String, logger: Logger? = nil) {
+    public init(url: String, hsUrl: String, jwtUrl: String, authKey: String, logger: Logger? = nil) {
         self.url = url
         self.hsUrl = hsUrl
+        self.jwtUrl = jwtUrl
+        self.authKey = authKey
         networkManager = NetworkManager(logger: logger)
+        jwtService = JwtService()
 
         if let scheduler = Self.serialSchedulers[url] {
             serialScheduler = scheduler
@@ -39,12 +45,19 @@ public class BlockchainComApi {
     }
 
     private func blocksSingle(heights: [Int]) -> Single<[BlockResponse]> {
-        let parameters: Parameters = [
-            "numbers": heights.map { String($0) }.joined(separator: ",")
-        ]
-
-        let request = networkManager.session.request("\(hsUrl)/hashes", method: .get, parameters: parameters)
-        return networkManager.single(request: request)
+        jwtService
+            .jwtSingle(baseUrl: jwtUrl, authKey: authKey)
+            .flatMap { [unowned self] response in
+                let jwt = response.data.token
+                let headers: HTTPHeaders = ["Authorization": jwt, "Content-Type": "application/json"]
+                
+                let parameters: Parameters = [
+                    "numbers": heights.map { String($0) }.joined(separator: ",")
+                ]
+                
+                let request = networkManager.session.request("\(hsUrl)/hashes", method: .get, parameters: parameters, headers: headers)
+                return networkManager.single(request: request)
+            }
     }
 
     private func itemsSingle(transactionResponses: [TransactionResponse]) -> Single<[SyncTransactionItem]> {
