@@ -6,11 +6,19 @@ public extension INetwork {
     var serviceFullNode: UInt64 { 1 }
 
     var bip44Checkpoint: Checkpoint {
-        try! Checkpoint(bundleName: bundleName, network: String(describing: type(of: self)), blockType: .bip44)
+        if let providedBlock = providedBlock {
+            return Checkpoint(providedBlock: providedBlock)
+        } else {
+            return try! Checkpoint(bundleName: bundleName, network: String(describing: type(of: self)), blockType: .bip44)
+        }
     }
 
     var lastCheckpoint: Checkpoint {
-        try! Checkpoint(bundleName: bundleName, network: String(describing: type(of: self)), blockType: .last)
+        if let providedBlock = providedBlock {
+            return Checkpoint(providedBlock: providedBlock)
+        } else {
+            return try! Checkpoint(bundleName: bundleName, network: String(describing: type(of: self)), blockType: .last)
+        }
     }
 
 }
