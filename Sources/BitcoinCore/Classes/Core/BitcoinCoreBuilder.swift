@@ -139,7 +139,10 @@ public class BitcoinCoreBuilder {
         let publicKeyManager: IPublicKeyManager & IBloomFilterProvider
 
         let purpose = extendedKey.info.purpose
-
+        
+        let btcTestnet = 1
+        let gapLimit = network.coinType == btcTestnet ? 5 : 20
+        
         switch extendedKey {
         case .private(let privateKey):
             switch extendedKey.derivedType {
@@ -149,12 +152,12 @@ public class BitcoinCoreBuilder {
                 let fetcher = MultiAccountPublicKeyFetcher(hdWallet: wallet)
                 publicKeyFetcher = fetcher
                 multiAccountPublicKeyFetcher = fetcher
-                publicKeyManager = PublicKeyManager.instance(storage: storage, hdWallet: wallet, gapLimit: 20, restoreKeyConverter: restoreKeyConverterChain)
+                publicKeyManager = PublicKeyManager.instance(storage: storage, hdWallet: wallet, gapLimit: gapLimit, restoreKeyConverter: restoreKeyConverterChain)
             case .account:
                 let wallet = HDAccountWallet(privateKey: privateKey)
                 hdWallet = wallet
                 publicKeyFetcher = PublicKeyFetcher(hdAccountWallet: wallet)
-                publicKeyManager = AccountPublicKeyManager.instance(storage: storage, hdWallet: wallet, gapLimit: 20, restoreKeyConverter: restoreKeyConverterChain)
+                publicKeyManager = AccountPublicKeyManager.instance(storage: storage, hdWallet: wallet, gapLimit: gapLimit, restoreKeyConverter: restoreKeyConverterChain)
             case .bip32:
                 throw BuildError.notSupported
             }
@@ -163,7 +166,7 @@ public class BitcoinCoreBuilder {
             case .account:
                 let wallet = HDWatchAccountWallet(publicKey: publicKey)
                 publicKeyFetcher = WatchPublicKeyFetcher(hdWatchAccountWallet: wallet)
-                publicKeyManager = AccountPublicKeyManager.instance(storage: storage, hdWallet: wallet, gapLimit: 20, restoreKeyConverter: restoreKeyConverterChain)
+                publicKeyManager = AccountPublicKeyManager.instance(storage: storage, hdWallet: wallet, gapLimit: gapLimit, restoreKeyConverter: restoreKeyConverterChain)
             default: throw BuildError.notSupported
             }
         }
@@ -204,7 +207,7 @@ public class BitcoinCoreBuilder {
         let checkpoint = BlockSyncer.resolveCheckpoint(network: network, syncMode: syncMode, storage: storage)
 
         let blockHashFetcher = BlockHashFetcher(restoreKeyConverter: restoreKeyConverterChain, apiManager: initialSyncApi, helper: BlockHashFetcherHelper())
-        let blockDiscovery = BlockDiscoveryBatch(checkpoint: checkpoint, gapLimit: 20, blockHashFetcher: blockHashFetcher, publicKeyFetcher: publicKeyFetcher, logger: logger)
+        let blockDiscovery = BlockDiscoveryBatch(checkpoint: checkpoint, gapLimit: gapLimit, blockHashFetcher: blockHashFetcher, publicKeyFetcher: publicKeyFetcher, logger: logger)
 
         let stateManager = ApiSyncStateManager(storage: storage, restoreFromApi: network.syncableFromApi && syncMode == BitcoinCore.SyncMode.api)
 
